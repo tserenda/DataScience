@@ -5,16 +5,24 @@ date: "Sunday, October 26, 2014"
 output: html_document
 ---
 
-This is README document describing the <b>run_analysis.R</b> script that performs analysis on data collected from the accelerometers from the Samsung Galaxy S smartphone. This script does the following. <br><br>
-1.Merges the training and the test sets to create one data set.<br>
-2.Extracts only the measurements on the mean and standard deviation for each measurement. <br>
-3.Uses descriptive activity names to name the activities in the data set<br>
-4.Appropriately labels the data set with descriptive variable names. <br>
-5.From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject.<br><br>
+<h3>About the project</h3>
+This is a project for Getting and Cleaning Data course offered through http://www.coursera.org. There are three files, namely:<br>
+<ul>
+<li><b>README.md</b>: This document</li>
+<li><b>run_analysis.R</b>: This script is the instruction for getting and cleaning raw data into tidy data.</li>
+<li><b>Codebook.mnd</b>: This document provides information about variables, experimental study design etc.</li>
+</ul>
 
-The script can be run simply by sourcing the script in R Studio as long as the Samsung data is in the working directory.<br><br>
-```{r}
+<u>Raw data</u>: The source comes from the Samsung Galaxy smartphone experiment. 
+https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip.
+
+It includes measurements of the embedded accelerometer and gyroscope components while subject performing various activities. For more information, refer to the following:
+
+http://archive.ics.uci.edu/ml/datasets/Human+Activity+Recognition+Using+Smartphones 
+
+<u>Tidy data</u>: run_analysis.R scripts generates tidy.txt in the working directory. This file contains tidy data set with the average of each variable for each activity and each subject.
+
+The script can be run simply by sourcing the script in R Studio.<br>
+```
 source("run_analysis.R")
 ```
-
-<br><br>The output of the script will be written as a text file (tidy.txt) in the working directory.
