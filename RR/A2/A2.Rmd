@@ -1,0 +1,138 @@
+---
+title: "Most Dangerous Natural Events (1950-2011)"
+date: "Saturday, November 22, 2014"
+output: html_document
+---
+
+## Synopsis
+In this report we aim to describe the 10 most dangerous natural events in terms of economical and social damages. Here, the economical damage can be understood as the total property and crop damages while the social damage as the number of fatalities and injuries. By identifying these events from the historical records, we are better equipped to prepare for emergencies.
+
+We obtained the storm data from the U.S. National Oceanic and Atmospheric Administration's (NOAA) storm database. This database tracks characteristics of major storms and weather events in the United States, including when and where they occur, as well as estimates of any fatalities, injuries, and property damage between 1950 and 2011. From these data and the analysis thereof, we found that the flood was among the most economically- while the tornado the most socially damaging events.
+
+## Loading and Processing the Raw Data
+From the U.S. National Oceanic and Atmospheric Administration's (NOAA) [storm database][1] between 1950 and 2011. There is also some documentation of the database available. Here you will find how some of the variables are constructed / defined.
+
+* National Weather Service [Storm Data Documentation][2]
+
+* National Climatic Data Center Storm Events [FAQ][3]
+
+In the earlier years of the database there are generally fewer events recorded, most likely due to a lack of good records. More recent years should be considered more complete.
+
+### Download and read in data
+```{r echo = FALSE, message=FALSE}
+library(ggplot2)
+library(plyr)
+library(dplyr)
+setwd("C:\\GIT\\DS\\RR\\A2")
+```
+
+We read in the whole file for simplicity.
+
+```{r cache = TRUE}
+storm = "storm.bz2"
+if (!file.exists(storm)) { download.file("https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2", storm) }
+dat <- read.csv(bzfile(storm))
+```
+
+### Subset relevant variables
+In the raw file, there are over 900,000 observations and 37 variables. For the purpose of this work, we are only interested in few measurements.
+
+```{r}
+sub <- select(tbl_df(dat), c(EVTYPE, FATALITIES, INJURIES, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP))
+```
+
+### Revalue exponents of PROPDMGEXP and CROPDMGEXP
+In the data, the exponents of property and crop damages are coded as follows:
+
+* h or H: hundredth
+
+* k or K: thousandth
+
+* m or M: millionth
+
+* b or B: billionth
+
+Hence, we are going to replace these with the actual exponents.
+
+```{r message = FALSE}
+values = c("-" = "0", "+" = "0", "?" = "0", "h" = "2", "H" = "2", "k" = "3", "K" = "3", "m" = "6", "M" = "6", "b" = "9", "B" = "9")
+sub$PROPDMGEXP <- revalue(sub$PROPDMGEXP, values)
+sub$CROPDMGEXP <- revalue(sub$CROPDMGEXP, values)
+```
+
+The majority of the values for the exponents are missing. Therefore, we filled them with '0' which will have no effect when calculating the total property and crop damages.
+
+```{r}
+levels(sub$PROPDMGEXP)[1] <- "0"
+levels(sub$CROPDMGEXP)[1] <- "0"
+```
+
+## Data Processing
+We will show the tables and graphs of the 10 events for economic and social impacts.
+
+### Economic Damage
+Here we add a new column DMG which is the sum of property and crop damages for each events.
+
+```{r}
+sub <- mutate(sub, DMG = PROPDMG * (10 ^ (as.numeric(PROPDMGEXP) - 1)) + CROPDMG * (10 ^ (as.numeric(CROPDMGEXP) - 1)))
+```
+
+We also need to group the data by the event type first and then sum up the DMG variable for each event type. There are close to 1000 types of event which is why we are looking at the top 10.
+
+```{r}
+by_event <- group_by(sub, EVTYPE)
+event_damage <- dplyr::summarize(by_event, historic_damage = sum(DMG))
+```
+
+### Social Damage
+We will add up all the fatalities and injuries per each event type
+
+```{r}
+fatalities <- dplyr::summarize(by_event, fatal = sum(FATALITIES))
+injuries <- dplyr::summarize(by_event, injury = sum(INJURIES))
+```
+
+## Results
+Let's see what the top 10 most dangerous event were historically.
+
+### Economically
+```{r}
+top10economic <- arrange(event_damage, desc(historic_damage))[1:10, ]
+top10economic
+with(top10economic, qplot(EVTYPE, historic_damage, main = "Most Damaging 10 Events",
+                  ylab = "Total Damage in USD", xlab = "", geom = "bar", stat = "identity") + coord_flip())
+```
+
+X axis describes the dollar amount in scientific notation. The flood resulted in over $140 billion.
+
+### Socially
+Fatalities:
+```{r}
+top10fatal <- arrange(fatalities, desc(fatal))[1:10, ]
+top10fatal
+```
+
+Here we take the log of fatalities value to adjust for the skew in the data.
+
+```{r}
+with(top10fatal, qplot(EVTYPE, log(fatal), main = "Most Fatal 10 Events",
+                  ylab = "Fatalities", xlab = "", geom = "bar", stat = "identity") + coord_flip())
+```
+
+Injuries:
+```{r}
+top10injury <- arrange(injuries, desc(injury))[1:10, ]
+top10injury
+```
+
+Here we take the log of injuries value to adjust for the skew in the data.
+
+```{r}
+with(top10injury, qplot(EVTYPE, log(injury), main = "10 Events with Most Injuries",
+                   ylab = "Inuries", xlab = "", geom = "bar", stat = "identity") + coord_flip())
+```
+
+
+[1]: https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2 "Storm DB"
+[2]: https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf "Storm Data Documentation"
+[3]: https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2FNCDC%20Storm%20Events-FAQ%20Page.pdf "FAQ"
