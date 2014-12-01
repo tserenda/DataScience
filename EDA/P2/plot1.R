@@ -14,7 +14,10 @@ NEI <- transform(readRDS(nei), fips = factor(fips), SCC = factor(SCC),
 library(dplyr)
 NEI <- tbl_df(NEI)
 by_year <- group_by(NEI, year)
-with(summarize(by_year, y = sum(Emissions)),
-     plot(year, y, main = "Total Emissions from PM2.5", ylab = "Emissions"))
+total.emission <- summarize(by_year, y = sum(Emissions))
+total.emission$y <- round(total.emission$y/1000)
+with(total.emission,
+     barplot(y, names.arg = year, main = "Total Emission in the United States 1999-2008",
+             ylab = expression('Total PM'[2.5]*" Emission (in thousands)")))
 dev.copy(png, "plot1.png")
 dev.off()

@@ -18,6 +18,7 @@ baltimore <- filter(NEI, fips == "24510")
 by_year_type <- group_by(baltimore, year, type)
 library(ggplot2)
 total <- summarize(by_year_type, Emissions = sum(Emissions))
-qplot(year, Emissions, data = total, facets = .~ type, geom = c("boxplot"), main = "Total Emissions from PM2.5 in Baltimore")
+qplot(year, Emissions, data = total, facets = .~ type, geom = c("boxplot"), main = "Total Emissions from PM2.5 in Baltimore", 
+      ylab = expression('Total PM'[2.5]*" Emission"))
 dev.copy(png, "plot3.png")
 dev.off()

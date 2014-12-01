@@ -15,6 +15,7 @@ NEI <- tbl_df(NEI)
 baltimore <- filter(NEI, fips == "24510")
 by_year <- group_by(baltimore, year)
 with(summarize(by_year, y = sum(Emissions)),
-     plot(year, y, main = "Total Emissions from PM2.5 in Baltimore", ylab = "Emissions"))
+     barplot(y, names.arg = year, main = "Total Emissions from PM2.5 in Baltimore 1999-2008",
+             ylab = expression('Total PM'[2.5]*" Emission")))
 dev.copy(png, "plot2.png")
 dev.off()
