@@ -1,0 +1,127 @@
+---
+output: word_document
+---
+# Statistical Inference Course Project
+
+In it, we will use simulation to explore inference and do some simple inferential data analysis. The project consists of two parts:
+
+1. Simulation exercise
+2. Basic inferential data analysis
+
+## Part 1. Simulation exercise
+
+The exponential distribution can be simulated in R with rexp(n, lambda) where lambda is the rate parameter. The mean of exponential distribution is 1/lambda and the standard deviation is also also 1/lambda. Let's set lambda = 0.2 for all of the simulations. In this simulation, we will investigate the distribution of averages of 40 exponential(0.2)s. Note that we will need to do a thousand or so simulated averages of 40 exponentials.
+
+Illustrate via simulation and associated explanatory text the properties of the distribution of the mean of 40 exponential(0.2)s.  We will
+A. Show where the distribution is centered at and compare it to the theoretical center of the distribution.
+B. Show how variable it is and compare it to the theoretical variance of the distribution.
+C. Show that the distribution is approximately normal.
+
+```{r}
+set.seed(1)
+nosim <- 1000
+n <- 40
+lambda <- .2
+sample.mean <- apply(matrix(rexp(nosim * n, lambda), nosim), 1, mean)
+```
+
+Distribution properties of sample.mean as follows:
+
+```{r}
+range.SM <- range(sample.mean); range.SM
+mean.SM <- mean(sample.mean); mean.SM
+sd.SM <- sd(sample.mean); sd.SM
+variance.SM <- sd.SM ^ 2; variance.SM
+median.SM <- qnorm(0.5, mean.SM, sd.SM); median.SM
+```
+
+Note that mean and median overlap.
+
+### Show where the distribution is centered at and compare it to the theoretical center of the distribution*
+
+We will plot the histogram of the sample means along with the density curve to illustrate the shape and a vertical line indicating the average of sample means.
+```{r}
+library(ggplot2)
+df <- data.frame(x = 1:nosim, y = sample.mean)
+ggplot(df, aes(x = sample.mean)) +
+        geom_histogram(aes(y = ..density..),
+                       binwidth = abs(range.SM[1] - range.SM[2])/30, color = "black", fill = "white") +
+        geom_density(alpha = 0.2, fill = "#FF6666") +
+        geom_vline(aes(xintercept = mean.SM), color = "red", linetype = "dashed", size = 1.5) +
+        labs(y = "Density", x = "Sample Mean")
+```
+
+For our analysis, the properties of the exponential distribution as follows:
+
+```{r}
+mu = 1 / lambda; mu
+sd.E = 1 / lambda; sd.E
+variance.E = sd.E^2; variance.E
+```
+
+The theory says that this distribution is centered around the population mean (mu).
+
+
+## Part 2. Basic inferential data analysis
+
+Load data.
+```{r}
+library(datasets)
+data(ToothGrowth)
+```
+
+Let's explore the data.
+
+```{r}
+head(ToothGrowth)
+str(ToothGrowth)
+summary(ToothGrowth)
+table(ToothGrowth$supp, ToothGrowth$dose)
+```
+
+We describe that ToothGrowth is a data frame with three variables - length in millimeter, OJ and VC supplements, and doses (0.5, 1,0 and 2.0). Two types of supplements are administered to two groups of 30 subjects each to promote tooth growth. Each supplement is given in 0.5, 1.0 and 2.0 doses to ten subjects each.
+
+```{r}
+library(ggplot2)
+ggplot(ToothGrowth, aes(len, dose)) + geom_point(aes(color = supp), size = 4, alpha = 1/2) + labs(title = "Tooth Growth") + labs(x = "Length", y = "Dose")
+```
+
+* It appears that increasing dose (0.5 -> 1.0 -> 2.0) results in longer growth.
+* Which supplement is better?
+* We will not assumt that higher than 2.0 doses results in even longer growth.
+
+### Different doses
+
+Null hypothesis: The means in different doses are the same.
+
+Alternative hypothesis: The means are different.
+
+The groups have the same variance.
+
+Compare 0.5 and 1.0 dosages
+
+```{r}
+TG0.5and1.0 = subset(ToothGrowth, dose %in% c(0.5, 1.0))
+t.test(len ~ dose, paired = FALSE, var.equal = TRUE, data = TG0.5and1.0)
+```
+
+The test suggest that we reject the null hypothesis in favor of the alternative based on p-value = 1.266e-07. The difference in means (-9.13) would only happen by chance 1 time in 1.266 * 10^7 experiments. Thus, we conclude that the difference in means is not a chance, but it is due to a real effect of higher dosage.
+
+Comparing  1.0 and 2.0 dosages yields a similar result.
+
+```{r}
+TG1.0and2.0 = subset(ToothGrowth, dose %in% c(1.0, 2.0))
+t.test(len ~ dose, paired = FALSE, var.equal = TRUE, data = TG1.0and2.0)
+```
+
+### Which supplement is better?
+
+The two supplements will have differenct variances.
+
+Compare OJ and VC
+
+```{r}
+t.test(len ~ supp, paired = FALSE, var.equal = FALSE, data = ToothGrowth)
+```
+
+OJ is better and the difference ~4 mm lies within the 95% confidence interval.

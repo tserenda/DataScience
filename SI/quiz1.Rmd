@@ -1,0 +1,56 @@
+##Q1
+Consider influenza epidemics for two parent heterosexual families. Suppose that the probability is 17% that at least one of the parents has contracted the disease. The probability that the father has contracted influenza is 12% while the probability that both the mother and father have contracted the disease is 6%. What is the probability that the mother has contracted influenza?
+
+##A1
+A = { >= 1 has I }
+F = { father has I }
+M = { mother has I }
+B = { both have I }
+P(A) = 17%
+P(F) = 12%
+P(B) = 6%
+
+P(A) = (P(F) + P(M)) - P(B)
+P(M) = P(A) + P(B) - P(F) = 17 + 6 - 12 = 11%
+
+##Q2
+A random variable, X is uniform, a box from 0 to 1 of height 1. (So that its density is f(x)=1 for 0=x=1.) What is its 75th percentile? 
+
+##A2
+0.75
+
+##Q3
+Processig Error
+
+##A3
+Processig Error
+
+##Q4
+A density that looks like a normal density (but may or may not be exactly normal) is exactly symmetric about zero. (Symmetric means if you flip it around zero it looks the same.) What is its median? (Hints, look at quantiles from Lecture 2 around 21:30 and the problem on page 9/10 from Homework 1.) 
+
+##A4
+The median must be 0. 
+
+##Q5
+Consider the following PMF shown below in R
+```{r eval=F}
+x <- 1:4
+p <- x/sum(x)
+temp <- rbind(x, p)
+rownames(temp) <- c("X", "Prob")
+temp
+```
+     [,1] [,2] [,3] [,4]
+X     1.0  2.0  3.0  4.0
+Prob  0.1  0.2  0.3  0.4
+
+What is the mean? (Hint, watch Lecture 4 on expectations of PMFs and look at Homework 1 problem on page 10/10 for a similar problem calculating the variance.)
+
+##A5
+3
+
+##Q6
+A web site (www.medicine.ox.ac.uk/bandolier/band64/b64-7.html) for home pregnancy tests cites the following: "When the subjects using the test were women who collected and tested their own samples, the overall sensitivity was 75%. Specificity was also low, in the range 52% to 75%." Assume the lower value for the specificity. Suppose a subject has a positive test and that 30% of women taking pregnancy tests are actually pregnant. What number is closest to the probability of pregnancy given the positive test?
+
+##A6
+.401
