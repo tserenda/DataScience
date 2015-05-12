@@ -1,45 +1,38 @@
+setwd("C:/GIT/DS/RP/assignment3")
+
 # Return a 2-column data frame containing the hospital in each state that has the ranking specified in num.
 
 rankall <- function(outcome, num = "best") {
-    # Read outcome data
-    hospital_data <- "HospitalCompare/outcome-of-care-measures.csv"
-    hospitals <- read.csv(hospital_data, colClasses = "character")
-    
-    # Check outcome
-    if (! outcome %in% c("heart attack", "heart failure", "pneumonia")) { stop("invalid outcome") }
-    
-    ## For each state, find the hospital of the given rank for the outcome.
-    ## Return a data frame with the hospital names and the state name
         
-    if (outcome == "heart attack")          criteria <- "Hospital.30.Day.Death..Mortality..Rates.from.Heart.Attack"
-    else if (outcome == "heart failure")    criteria <- "Hospital.30.Day.Death..Mortality..Rates.from.Heart.Failure"
-    else                                    criteria <- "Hospital.30.Day.Death..Mortality..Rates.from.Pneumonia"
-
-    # Prepare the data frame
-    hospitals <- hospitals[, c("Hospital.Name", "State", criteria)]
-    suppressWarnings(hospitals[, criteria] <- as.numeric(hospitals[, criteria]))
-    hospitals$State <- as.factor(hospitals$State)
-    hospitals <- hospitals[complete.cases(hospitals), ]
-    
-    # Take a data frame and return the row specified by the 'num' argument
-    hospital_rank <- function(df) {
-        idx <- 0
-
-        # Order data frame based on - first, rate criteria and second, hospital name
-        df <- df[order(df[, criteria], df[, "Hospital.Name"]), , drop = FALSE]
-        numofhospitals <- nrow(df)
+        # Read outcome data
+        csv <- "outcome-of-care-measures.csv"
+        H <- read.csv(csv, colClasses = "character")
         
-        # Return the rank based on num argument
-        if (num == "best")                              { df[1, "Hospital.Name"] }
-        else if (num == "worst")                        { df[numofhospitals, "Hospital.Name"] }
-        else if (num >=1 & num <= numofhospitals)       { df[num, "Hospital.Name"] }
-        else                                            { "<NA>" }
-    }
-    
-    # Group by states and then apply a custom function
-    groups <- split(hospitals, hospitals$State)
-    result <- lapply(groups, hospital_rank)
-    states <- names(result)
-    clinics <- unlist(result, use.names = FALSE)
-    data.frame(hospital = clinics, state = states)
+        # Check outcome
+        outcomes <- c("heart attack", "heart failure", "pneumonia")
+        if (! outcome %in% outcomes) { stop("invalid outcome") }
+        
+        # Return hospital name in that state with lowest 30-day death rate
+        if (outcome == "heart attack")          rate <- "Hospital.30.Day.Death..Mortality..Rates.from.Heart.Attack"
+        if (outcome == "heart failure")         rate <- "Hospital.30.Day.Death..Mortality..Rates.from.Heart.Failure"
+        if (outcome == "pneumonia")             rate <- "Hospital.30.Day.Death..Mortality..Rates.from.Pneumonia"
+        
+        # Narrow down to hospitals with data only
+        H <- H[H[, rate] != "Not Available", c("Hospital.Name", "State", rate)]
+        H[, rate] <- as.numeric(H[, rate])
+        
+        # Order hospitals within each state
+        unordered <- split(H, H$State)
+        ordered <- lapply(unordered, function(x) { x[order(x[, 3], x$Hospital.Name), ] })
+        
+        # Pick a qualifying hospital from each state
+        picked <- sapply(ordered, function(x) {
+                if (num == "best")              head(x, 1)$Hospital.Name
+                else if (num == "worst")        tail(x, 1)$Hospital.Name
+                else if (num < nrow(x))         x[num, "Hospital.Name"]
+                else                            NA
+        })
+        
+        # Combine the picked hospitals
+        data.frame(hospital = picked, state = names(picked))
 }
