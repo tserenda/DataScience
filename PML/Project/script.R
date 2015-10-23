@@ -51,40 +51,51 @@ pred.valid.rf = predict(fit.rf, valid)
 # confusion matrix on validation
 cmx.valid.rf = confusionMatrix(pred.valid.rf, valid$classe)
 
-# plots
-summary(train)
-table(train$classe)
-x = subset(train, select = c(
-        roll_arm,      pitch_arm,      yaw_arm,      total_accel_arm,
-        roll_forearm,  pitch_forearm,  yaw_forearm,  total_accel_forearm,
-        roll_belt,     pitch_belt,     yaw_belt,     total_accel_belt,
-        roll_dumbbell, pitch_dumbbell, yaw_dumbbell, total_accel_dumbbell,
-        classe))
-attach(x)
-featurePlot(x[, c("roll_arm", "pitch_arm", "yaw_arm", "total_accel_arm" )], classe, plot = "pairs")
-featurePlot(x[, c("roll_forearm", "pitch_forearm", "yaw_forearm", "total_accel_forearm" )], classe, plot = "pairs")
-featurePlot(x[, c("roll_belt", "pitch_belt", "yaw_belt", "total_accel_belt" )], classe, plot = "pairs")
-featurePlot(x[, c("roll_dumbbell", "pitch_dumbbell", "yaw_dumbbell", "total_accel_dumbbell" )], classe, plot = "pairs")
+# # plots
+# summary(train)
+# table(train$classe)
+# x = subset(train, select = c(
+#         roll_arm,      pitch_arm,      yaw_arm,      total_accel_arm,
+#         roll_forearm,  pitch_forearm,  yaw_forearm,  total_accel_forearm,
+#         roll_belt,     pitch_belt,     yaw_belt,     total_accel_belt,
+#         roll_dumbbell, pitch_dumbbell, yaw_dumbbell, total_accel_dumbbell,
+#         classe))
+# attach(x)
+# featurePlot(x[, c("roll_arm", "pitch_arm", "yaw_arm", "total_accel_arm" )], classe, plot = "pairs")
+# featurePlot(x[, c("roll_forearm", "pitch_forearm", "yaw_forearm", "total_accel_forearm" )], classe, plot = "pairs")
+# featurePlot(x[, c("roll_belt", "pitch_belt", "yaw_belt", "total_accel_belt" )], classe, plot = "pairs")
+# featurePlot(x[, c("roll_dumbbell", "pitch_dumbbell", "yaw_dumbbell", "total_accel_dumbbell" )], classe, plot = "pairs")
+# 
+# featurePlot(x[, c("roll_arm", "roll_forearm", "roll_belt", "roll_dumbbell" )], classe, plot = "pairs")
+# featurePlot(x[, c("pitch_arm", "pitch_forearm", "pitch_belt", "pitch_dumbbell" )], classe, plot = "pairs")
+# featurePlot(x[, c("yaw_arm", "yaw_forearm", "yaw_belt", "yaw_dumbbell" )], classe, plot = "pairs")
+# featurePlot(x[, c("total_accel_arm", "total_accel_forearm", "total_accel_belt", "total_accel_dumbbell" )], classe, plot = "pairs")
+# 
+# qplot(scale(roll_arm), col = classe, geom = "density")
+# qplot(scale(roll_belt), col = classe, geom = "density")
+# qplot(scale(roll_forearm), col = classe, geom = "density")
+# qplot(scale(roll_dumbbell), col = classe, geom = "density")
+# qplot(scale(pitch_arm), col = classe, geom = "density")
+# qplot(scale(pitch_belt), col = classe, geom = "density")
+# qplot(scale(pitch_forearm), col = classe, geom = "density")
+# qplot(scale(pitch_dumbbell), col = classe, geom = "density")
+# qplot(scale(yaw_arm), col = classe, geom = "density")
+# qplot(scale(yaw_belt), col = classe, geom = "density")
+# qplot(scale(yaw_forearm), col = classe, geom = "density")
+# qplot(scale(yaw_dumbbell), col = classe, geom = "density")
+# qplot(scale(total_accel_arm), col = classe, geom = "density")
+# qplot(scale(total_accel_belt), col = classe, geom = "density")
+# qplot(scale(total_accel_forearm), col = classe, geom = "density")
+# qplot(scale(total_accel_dumbbell), col = classe, geom = "density")
+# detach(x)
 
-featurePlot(x[, c("roll_arm", "roll_forearm", "roll_belt", "roll_dumbbell" )], classe, plot = "pairs")
-featurePlot(x[, c("pitch_arm", "pitch_forearm", "pitch_belt", "pitch_dumbbell" )], classe, plot = "pairs")
-featurePlot(x[, c("yaw_arm", "yaw_forearm", "yaw_belt", "yaw_dumbbell" )], classe, plot = "pairs")
-featurePlot(x[, c("total_accel_arm", "total_accel_forearm", "total_accel_belt", "total_accel_dumbbell" )], classe, plot = "pairs")
+quizFile = "pml-testing.csv"
+url = "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"
+if (!file.exists(quizFile)) { download.file(url, quizFile) }
+quiz = read.csv(quizFile)
 
-qplot(scale(roll_arm), col = classe, geom = "density")
-qplot(scale(roll_belt), col = classe, geom = "density")
-qplot(scale(roll_forearm), col = classe, geom = "density")
-qplot(scale(roll_dumbbell), col = classe, geom = "density")
-qplot(scale(pitch_arm), col = classe, geom = "density")
-qplot(scale(pitch_belt), col = classe, geom = "density")
-qplot(scale(pitch_forearm), col = classe, geom = "density")
-qplot(scale(pitch_dumbbell), col = classe, geom = "density")
-qplot(scale(yaw_arm), col = classe, geom = "density")
-qplot(scale(yaw_belt), col = classe, geom = "density")
-qplot(scale(yaw_forearm), col = classe, geom = "density")
-qplot(scale(yaw_dumbbell), col = classe, geom = "density")
-qplot(scale(total_accel_arm), col = classe, geom = "density")
-qplot(scale(total_accel_belt), col = classe, geom = "density")
-qplot(scale(total_accel_forearm), col = classe, geom = "density")
-qplot(scale(total_accel_dumbbell), col = classe, geom = "density")
-detach(x)
+
+# predict on quiz
+pred.quiz.rf = predict(fit.rf, quiz)
+
+
