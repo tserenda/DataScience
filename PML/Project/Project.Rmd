@@ -1,0 +1,145 @@
+#Background
+
+Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement - a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, your goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available from the website here: http://groupware.les.inf.puc-rio.br/har (see the section on the Weight Lifting Exercise Dataset). 
+
+#Data 
+
+The training data for this project are available here: https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv
+
+The test data are available here: https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv
+
+The data for this project come from this source: http://groupware.les.inf.puc-rio.br/har.
+
+```{r}
+library(caret)
+#setwd(".\\PML\\Project")
+fileName = "pml-training.csv"
+url = "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
+if (!file.exists(fileName)) { download.file(url, fileName) }
+actDF = read.csv(fileName)
+```
+
+We will split data into training, testing and validation sets.
+
+```{r}
+set.seed(123)
+inTrain = createDataPartition(actDF$classe, p = 0.6, list = FALSE)
+train = actDF[inTrain, ]
+inTest = createDataPartition(actDF[-inTrain, ]$classe, p = 0.5, list = FALSE)
+test = actDF[-inTrain, ][inTest, ]
+valid = actDF[-inTrain, ][-inTest, ]
+```
+
+#Preprocess
+
+There are many variates that have more than 50% missing or empty values. We will go ahead and drop these variates because they will likely trip the machine learning algorithms.
+
+```{r}
+# drop NA variants
+na = integer()
+for (i in 1:ncol(train)) {
+        ratio = sum(is.na(train[, i])) / nrow(train) 
+        if (ratio > 0.5) { na = c(na, i) }
+}
+train = train[, -c(na)]
+
+# drop empty variants
+empty = integer()
+for (i in 1:ncol(train)) {
+        ratio = sum(train[, i] == "") / nrow(train) 
+        if (ratio > 0.50) { empty = c(empty, i) }
+}
+train = train[, -c(empty)]
+```
+
+There are many variates that are the transformations of the true signals. The following are some of these variates: min, max, average, variance, standard deviation. By dropping these variates, we are not losing valuable information. Therefore, let's only pick the accelerometer measurements.
+
+```{r}
+# pick accelerometer measurements
+forearm = grep("_forearm", names(train))
+belt = grep("_belt", names(train))
+dumbbell = grep("_dumbbell", names(train))
+arm = grep("_arm", names(train))
+train = cbind(train[, arm], train[, forearm], train[, belt], train[, dumbbell], classe = train[, "classe"])
+```
+
+#Train Model
+
+We'll use one of the most widely used classifier, Random Forest, with 10 fold of cross validations. The output is modeled with all the remaining covariates. Since several of the variants are highly skewed and/or have kurtosis (taller peak than normal distribution), we should use the Box Cox transformation. We should also run PCA to compress the features.
+
+```{r}
+fit.rf    = train(train$classe ~ ., data = train, method = "rf",    preProcess = c("pca", "BoxCox"), trControl = trainControl(method = "cv"))
+plot(fit.rf)
+```
+
+As we can see, most of the variation was explained with about 27 variates. That is, by using more than 27 doesn't improve the accuracy a lot. 
+
+```{r}
+fit.rf$finalModel
+```
+
+Also, as we can see the OOB error rate is 3%.
+
+#Test Prediction
+
+Let's run our model on the test set.
+
+```{r}
+pred.rf = predict(fit.rf, test)
+
+# confusion matrix on test
+cmx.rf = confusionMatrix(pred.rf, test$classe)
+cmx.rf
+```
+
+Above, the Kappa value is 0.96 which is the accuracy measurement for multiclass problem.
+
+#Validation Prediction
+
+```{r}
+pred.valid.rf = predict(fit.rf, valid)
+
+# confusion matrix on validation
+cmx.valid.rf = confusionMatrix(pred.valid.rf, valid$classe)
+cmx.valid.rf
+```
+
+# plots
+```{r}
+summary(train)
+table(train$classe)
+x = subset(train, select = c(
+        roll_arm,      pitch_arm,      yaw_arm,      total_accel_arm,
+        roll_forearm,  pitch_forearm,  yaw_forearm,  total_accel_forearm,
+        roll_belt,     pitch_belt,     yaw_belt,     total_accel_belt,
+        roll_dumbbell, pitch_dumbbell, yaw_dumbbell, total_accel_dumbbell,
+        classe))
+attach(x)
+featurePlot(x[, c("roll_arm", "pitch_arm", "yaw_arm", "total_accel_arm" )], classe, plot = "pairs")
+featurePlot(x[, c("roll_forearm", "pitch_forearm", "yaw_forearm", "total_accel_forearm" )], classe, plot = "pairs")
+featurePlot(x[, c("roll_belt", "pitch_belt", "yaw_belt", "total_accel_belt" )], classe, plot = "pairs")
+featurePlot(x[, c("roll_dumbbell", "pitch_dumbbell", "yaw_dumbbell", "total_accel_dumbbell" )], classe, plot = "pairs")
+
+featurePlot(x[, c("roll_arm", "roll_forearm", "roll_belt", "roll_dumbbell" )], classe, plot = "pairs")
+featurePlot(x[, c("pitch_arm", "pitch_forearm", "pitch_belt", "pitch_dumbbell" )], classe, plot = "pairs")
+featurePlot(x[, c("yaw_arm", "yaw_forearm", "yaw_belt", "yaw_dumbbell" )], classe, plot = "pairs")
+featurePlot(x[, c("total_accel_arm", "total_accel_forearm", "total_accel_belt", "total_accel_dumbbell" )], classe, plot = "pairs")
+
+qplot(scale(roll_arm), col = classe, geom = "density")
+qplot(scale(roll_belt), col = classe, geom = "density")
+qplot(scale(roll_forearm), col = classe, geom = "density")
+qplot(scale(roll_dumbbell), col = classe, geom = "density")
+qplot(scale(pitch_arm), col = classe, geom = "density")
+qplot(scale(pitch_belt), col = classe, geom = "density")
+qplot(scale(pitch_forearm), col = classe, geom = "density")
+qplot(scale(pitch_dumbbell), col = classe, geom = "density")
+qplot(scale(yaw_arm), col = classe, geom = "density")
+qplot(scale(yaw_belt), col = classe, geom = "density")
+qplot(scale(yaw_forearm), col = classe, geom = "density")
+qplot(scale(yaw_dumbbell), col = classe, geom = "density")
+qplot(scale(total_accel_arm), col = classe, geom = "density")
+qplot(scale(total_accel_belt), col = classe, geom = "density")
+qplot(scale(total_accel_forearm), col = classe, geom = "density")
+qplot(scale(total_accel_dumbbell), col = classe, geom = "density")
+detach(x)
+```

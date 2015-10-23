@@ -4,7 +4,8 @@ Which of the following are steps in building a machine learning algorithm?
 
 ##A1
 
-Collecting data to answer the question. 
+* Collecting data to answer the question  
+* Creating features  
 
 ##Question 2
 
@@ -28,7 +29,8 @@ What are some common error rates for predicting binary variables (i.e. variables
 
 ##A4
 
-Specificity 
+* Specificity  
+* Accuracy  
 
 ##Question 5
 
@@ -36,4 +38,4 @@ Suppose that we have created a machine learning algorithm that predicts whether 
 
 ##A5
 
-0.009% 
+9% 

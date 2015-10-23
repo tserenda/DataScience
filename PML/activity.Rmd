@@ -1,0 +1,40 @@
+#Question
+
+##Start with a general question
+
+Can I automatically tell sets (10 reps) that are correctly executed?
+
+##Make It Concrete
+
+Can I use sensor readings from the sets to classify them as A, B, C, D, or E?
+
+#Input Data
+
+```{r}
+if (!file.exists("pml-training.csv")) {
+        download.file(url = "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv", "pml-training.csv")
+}
+
+training_csv <- read.csv("pml-training.csv")
+dim(training_csv)
+
+(read_belt <- colnames(training_csv)[grep("_belt", colnames(training_csv), ignore.case = T)])
+(read_arm <- colnames(training_csv)[grep("_arm", colnames(training_csv), ignore.case = T)])
+(read_forearm <- colnames(training_csv)[grep("_forearm", colnames(training_csv), ignore.case = T)])
+(read_dumbbell <- colnames(training_csv)[grep("_dumbbell", colnames(training_csv), ignore.case = T)])
+
+
+```
+#Features
+
+There are four different ways to do the exercise incorrectly:
+        1. Throw the elbow to the front (Class B)
+        2. Lift the dumbbell only halfway (Class C)
+        3. Lower the dumbbell only halfway (Class D)
+        4. Throw the hip to the front (Class E)
+
+Read more: http://groupware.les.inf.puc-rio.br/har#weight_lifting_exercises#ixzz3ZKAYI1sC
+
+#Algorithm
+#Parameters
+#Evaluation
