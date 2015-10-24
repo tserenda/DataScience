@@ -19,20 +19,49 @@ shinyUI(pageWithSidebar(
                                                              '5. Advanced Degree')),
                 submitButton('Submit')
         ),
+#         mainPanel(
+#                 h1('Your parameters'),
+#                 h3('You entered:'),
+#                 h4('Age'), verbatimTextOutput("oid1"),
+#                 h4('Job Class'), verbatimTextOutput("oid2"),
+#                 h4('Marital Status'), verbatimTextOutput("oid3"),
+#                 h4('Education'), verbatimTextOutput("oid4"),
+# 
+#                 h1('Result'),
+#                 h3('Plot'), plotOutput('qq'),
+#                 
+#                 h3('Linear Model'),
+#                 h4('Coefficients'), verbatimTextOutput("coef"),
+#                 
+#                 h3('Predicted Wage'), verbatimTextOutput('owage')
+#         )
+#         
+        
         mainPanel(
-                h1('Your parameters'),
-                h3('You entered:'),
-                h4('Age'), verbatimTextOutput("oid1"),
-                h4('Job Class'), verbatimTextOutput("oid2"),
-                h4('Marital Status'), verbatimTextOutput("oid3"),
-                h4('Education'), verbatimTextOutput("oid4"),
-
-                h1('Result'),
-                h3('Plot'), plotOutput('qq'),
-                
-                h3('Linear Model'),
-                h4('Coefficients'), verbatimTextOutput("coef"),
-                
-                h3('Predicted Wage'), verbatimTextOutput('owage')
+                tabsetPanel(
+                        tabPanel("Application", 
+                                 h1('Your parameters'),
+                                 h3('You entered:'),
+                                 h4('Age'), verbatimTextOutput("oid1"),
+                                 h4('Job Class'), verbatimTextOutput("oid2"),
+                                 h4('Marital Status'), verbatimTextOutput("oid3"),
+                                 h4('Education'), verbatimTextOutput("oid4"),
+                                 
+                                 h1('Result'),
+                                 h3('Plot'), plotOutput('qq'),
+                                 
+                                 h3('Linear Model'),
+                                 h4('Coefficients'), verbatimTextOutput("coef"),
+                                 
+                                 h3('Predicted Wage'), verbatimTextOutput('owage')
+                                 ),
+                        tabPanel("Documentation", includeMarkdown("documentation.md"))
+                )
         )
+        
+        
+        
+        
+        
+        
 ))
