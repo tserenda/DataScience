@@ -1,0 +1,116 @@
+```{r echo = F}
+set.seed(123)
+library(ggplot2)
+library(caret)
+library(ISLR)
+data(Wage)
+
+inTrain = createDataPartition(Wage$wage, p = 0.6, list = FALSE)
+training = Wage[inTrain, ]
+test = Wage[-inTrain, ]
+fit = lm(wage ~ age + jobclass + maritl + education, data = training)
+```
+
+Wage Prediction Application
+========================================================
+author: Ari
+date: `r date()`
+
+Hosted on [Shiny](https://mongolia.shinyapps.io/Project)
+
+Goal
+========================================================
+
+This application predicts a wage from your age, job class, marital status and education level. It is based on the Wage data in the [ISLR](https://cran.r-project.org/web/packages/ISLR/index.html) package and uses the linear regression model to predict for simplicity and speed.
+
+Dateset (1 of 3)
+========================================================
+
+```{r}
+str(Wage)
+```
+
+Dateset (2 of 3)
+========================================================
+
+```{r}
+summary(Wage)
+```
+
+Dateset (3 of 3)
+========================================================
+
+```{r}
+head(Wage, 3)
+```
+
+Plot (1 of 3)
+========================================================
+
+```{r, echo=FALSE}
+qplot(age, wage, colour = education, data = training) + geom_smooth(method = 'lm', formula = y ~ x)
+```
+
+***
+
+## Observation
+It is evident that the wage increases with age. Also, the men with advanced degree earn the highest.
+
+Plot (2 of 3)
+========================================================
+
+```{r, echo=FALSE}
+qplot(age, wage, colour = jobclass, data = training)
+```
+
+***
+
+## Observation
+It is interesting to note that there is a cluster of men in the information job earning over 200. This outlier may throw off the simple linear model.
+
+Plot (3 of 3)
+========================================================
+
+```{r, echo=FALSE}
+qplot(wage, colour = education, data = training, geom = 'density')
+```
+
+***
+
+## Observation
+Here, we see that, for example, most men with some college education earn 100.
+
+Model
+========================================================
+
+```{r eval=F}
+fit = lm(wage ~ age + jobclass + maritl + education, data = training)
+```
+
+```{r echo = FALSE, width=100}
+par(mfrow = c(2, 2))
+plot(fit)
+```
+
+***
+
+## Goodness of Fit
+- The residuals line appears farther from the zero reference line at higher wages. This is due to the high earning cluster of some informational workers. In other words, smaller the wage, more accurate the prediction becomes.   
+- On the Q-Q plot, the points follow the 45 degree line closely most of the way.
+
+Prediction
+========================================================
+
+```{r}
+p = round(predict(fit, test), 2)
+```
+The following are some examples of predictions:
+
+Age | Job Class   | Marital Status | Education      |  Pred Wage
+----| ------------|--------------  | -------------- | ----------  
+`r test[1, "age"]`  | `r test[1, "jobclass"]` | `r test[1, "maritl"]`  | `r test[1, "education"]`   | `r p[1]`
+`r test[2, "age"]`  | `r test[2, "jobclass"]` | `r test[2, "maritl"]`  | `r test[2, "education"]`   | `r p[2]`
+`r test[3, "age"]`  | `r test[3, "jobclass"]` | `r test[3, "maritl"]`  | `r test[3, "education"]`   | `r p[3]`
+`r test[4, "age"]`  | `r test[4, "jobclass"]` | `r test[4, "maritl"]`  | `r test[4, "education"]`   | `r p[4]`
+`r test[5, "age"]`  | `r test[5, "jobclass"]` | `r test[5, "maritl"]`  | `r test[5, "education"]`   | `r p[5]`
+`r test[6, "age"]`  | `r test[6, "jobclass"]` | `r test[6, "maritl"]`  | `r test[6, "education"]`   | `r p[6]`
